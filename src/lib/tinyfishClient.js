@@ -95,7 +95,7 @@ export async function findProductsAndReviews({ condition }) {
 
 Condition to research: "${condition}"
 
-Part 1: Search for 5 to 10 over-the-counter skincare products commonly recommended for treating or improving "${condition}".
+Part 1: Search for 3 to 6 over-the-counter skincare products commonly recommended for treating or improving "${condition}".
 
 Part 2: For each product found, search for customer reviews across major retail sites (Amazon, Sephora, Ulta, the brand's own website, etc.). Collect as much review data as possible: overall sentiment, notable customer comments, average ratings, and review counts.
 
@@ -118,7 +118,7 @@ Return ONLY this JSON structure:
   ]
 }
 
-Minimum 5 products, maximum 10. Do not include any text outside the JSON object.`
+Minimum 3 products, maximum 6. Do not include any text outside the JSON object.`
 
   return callTinyfish(searchUrl, goal)
 }

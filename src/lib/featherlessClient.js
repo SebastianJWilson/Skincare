@@ -139,14 +139,12 @@ Return your analysis as a JSON object in exactly this format:
   "conditions": [
     { "rank": 1, "name": "<condition name>", "confidence": <0.00-1.00> },
     { "rank": 2, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 3, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 4, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 5, "name": "<condition name>", "confidence": <0.00-1.00> }
+    { "rank": 3, "name": "<condition name>", "confidence": <0.00-1.00> }
   ]
 }
 
 Confidence values reflect relative likelihood given visual and demographic context.
-Return exactly 5 conditions. Do not include any text outside the JSON object.`
+Return exactly 3 conditions. Do not include any text outside the JSON object.`
 
   const payload = {
     model: VISION_MODEL,
@@ -154,7 +152,7 @@ Return exactly 5 conditions. Do not include any text outside the JSON object.`
       {
         role: 'system',
         content:
-          'You are a dermatological AI assistant trained to analyze skin photos and suggest potential conditions for educational purposes. You are not a licensed medical professional and do not provide diagnoses. Always respond with valid JSON only — no preamble, no markdown code fences, no trailing text.',
+          '/no_think\nYou are a dermatological AI assistant. Identify the top 3 most likely skin conditions from the image and patient info. Respond with valid JSON only — no preamble, no markdown code fences, no trailing text.',
       },
       {
         role: 'user',
@@ -168,7 +166,8 @@ Return exactly 5 conditions. Do not include any text outside the JSON object.`
       },
     ],
     temperature: 0.2,
-    max_tokens: 4096,
+    max_tokens: 4000,
+    chat_template_kwargs: { enable_thinking: false },
   }
 
   return callFeatherless(payload)
@@ -182,7 +181,7 @@ Return exactly 5 conditions. Do not include any text outside the JSON object.`
 export async function rankProducts({ rawProductsAndReviews, condition }) {
   console.log('[Featherless] rankProducts called:', { condition, productCount: rawProductsAndReviews?.products?.length })
 
-  const userPrompt = `Below is a JSON object containing skincare products and their collected review data for the condition: "${condition}".
+  const userPrompt = `/no_think\nBelow is a JSON object containing skincare products and their collected review data for the condition: "${condition}".
 
 ${JSON.stringify(rawProductsAndReviews)}
 
@@ -222,7 +221,8 @@ Include every product from the input. Do not omit any.`
       { role: 'user', content: userPrompt },
     ],
     temperature: 0.2,
-    max_tokens: 2048,
+    max_tokens: 4000,
+    chat_template_kwargs: { enable_thinking: false },
   }
 
   return callFeatherless(payload)
