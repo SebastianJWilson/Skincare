@@ -61,9 +61,9 @@ export default function SubscriptionPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs text-white/76">
-            <div className="rounded-[1.1rem] border border-white/10 bg-white/5 px-3 py-3">Unlimited cases</div>
-            <div className="rounded-[1.1rem] border border-white/10 bg-white/5 px-3 py-3">AI diagnosis</div>
-            <div className="rounded-[1.1rem] border border-white/10 bg-white/5 px-3 py-3">Product rank</div>
+            <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-3">Unlimited cases</div>
+            <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-3">AI diagnosis</div>
+            <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-3">Product rank</div>
           </div>
         </div>
 
@@ -102,13 +102,13 @@ export default function SubscriptionPage() {
         {/* CTA */}
         <div className="app-panel-muted space-y-4">
           {error && (
-            <div className="rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-[0.9rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
           {isPremium ? (
-            <div className="rounded-[1.2rem] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div className="rounded-[0.9rem] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
               You're already subscribed. Enjoy unlimited cases!
             </div>
           ) : (

@@ -136,16 +136,16 @@ export default function NewCasePage() {
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-xs text-white/76">
-              <div className="rounded-[1.1rem] border border-white/10 bg-white/5 px-3 py-3">1. Upload</div>
-              <div className="rounded-[1.1rem] border border-white/10 bg-white/5 px-3 py-3">2. Diagnose</div>
-              <div className="rounded-[1.1rem] border border-white/10 bg-white/5 px-3 py-3">3. Rank</div>
+              <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-3">1. Upload</div>
+              <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-3">2. Diagnose</div>
+              <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-3">3. Rank</div>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {submitError && (
-            <div className="rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-[0.9rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {submitError}
             </div>
           )}

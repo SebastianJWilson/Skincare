@@ -161,7 +161,7 @@ export default function ProfilePage() {
             <span className="app-kicker block">Edit Demographics</span>
 
             {serverError && (
-              <div className="rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-[0.9rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {serverError}
               </div>
             )}
@@ -371,7 +371,7 @@ export default function ProfilePage() {
           onClick={() => setShowSignOutDialog(false)}
         >
           <div
-            className="app-panel mb-4 w-full max-w-[430px] space-y-4 rounded-[2rem] px-5 py-5"
+            className="app-panel mb-4 w-full max-w-[430px] space-y-4 rounded-[1.5rem] px-5 py-5"
             onClick={e => e.stopPropagation()}
             style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
           >

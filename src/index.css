@@ -89,7 +89,7 @@ a,
   }
 
   .app-panel {
-    @apply rounded-[1.9rem] border p-5;
+    @apply rounded-[1.4rem] border p-5;
     border-color: rgba(24, 33, 29, 0.08);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(253, 251, 247, 0.88) 100%);
     box-shadow:
@@ -98,14 +98,14 @@ a,
   }
 
   .app-panel-muted {
-    @apply rounded-[1.7rem] border p-4;
+    @apply rounded-[1.25rem] border p-4;
     border-color: rgba(24, 33, 29, 0.08);
     background: rgba(255, 255, 255, 0.64);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
   .app-panel-dark {
-    @apply rounded-[2rem] border p-5 text-white;
+    @apply rounded-[1.5rem] border p-5 text-white;
     border-color: rgba(255, 255, 255, 0.08);
     background:
       radial-gradient(circle at top left, rgba(155, 181, 149, 0.28), transparent 32%),
@@ -116,7 +116,7 @@ a,
   }
 
   .app-card {
-    @apply rounded-[1.5rem] border p-4 transition-all duration-300;
+    @apply rounded-[1.125rem] border p-4 transition-all duration-300;
     border-color: rgba(24, 33, 29, 0.08);
     background: rgba(255, 255, 255, 0.78);
     box-shadow: 0 16px 40px rgba(72, 94, 80, 0.08);
@@ -142,7 +142,7 @@ a,
   .app-input,
   .app-textarea,
   .app-select {
-    @apply w-full rounded-[1.2rem] border px-4 text-[15px] text-[#18211d] transition-all duration-300 placeholder:text-[#7f8b83] focus:outline-none;
+    @apply w-full rounded-[0.9rem] border px-4 text-[15px] text-[#18211d] transition-all duration-300 placeholder:text-[#7f8b83] focus:outline-none;
     border-color: rgba(24, 33, 29, 0.1);
     background: rgba(255, 255, 255, 0.84);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);

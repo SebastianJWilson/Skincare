@@ -8,7 +8,7 @@ function NavIcon({ children, label, to, isActiveOverride }) {
         const active = typeof isActiveOverride === 'boolean' ? isActiveOverride : isActive
 
         return (
-        `flex min-w-[84px] flex-col items-center gap-1 rounded-[1.1rem] px-3 py-2.5 text-[11px] font-medium tracking-[0.02em] transition-all duration-300 ${
+        `flex min-w-[84px] flex-col items-center gap-1 rounded-[0.85rem] px-3 py-2.5 text-[11px] font-medium tracking-[0.02em] transition-all duration-300 ${
           active
             ? 'bg-[#18211d] text-white shadow-[0_14px_28px_rgba(24,33,29,0.16)]'
             : 'text-[#5e6a60] hover:bg-white/65 hover:text-[#18211d]'
@@ -38,7 +38,7 @@ export default function AppShell({ children, title, headerExtra = null }) {
       </a>
 
       <div className="app-mobile-frame px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-3">
-        <header className="app-floating-nav sticky top-[calc(env(safe-area-inset-top)+12px)] z-20 mb-5 rounded-[1.8rem] px-4 py-3">
+        <header className="app-floating-nav sticky top-[calc(env(safe-area-inset-top)+12px)] z-20 mb-5 rounded-[1.35rem] px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <div className={`min-w-0 ${headerExtra ? 'flex-1' : ''}`}>
               <h1 className="truncate text-xl font-semibold tracking-[-0.04em] text-[#18211d]">{title}</h1>
@@ -53,7 +53,7 @@ export default function AppShell({ children, title, headerExtra = null }) {
       </div>
 
       <nav
-        className="app-floating-nav fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-[398px] -translate-x-1/2 items-center justify-around rounded-[1.9rem] px-2 py-2"
+        className="app-floating-nav fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-[398px] -translate-x-1/2 items-center justify-around rounded-[1.4rem] px-2 py-2"
         style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
       >
         <NavIcon to="/cases" label="Cases" isActiveOverride={isCasesTabActive}>
