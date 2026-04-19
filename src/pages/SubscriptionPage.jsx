@@ -73,7 +73,7 @@ export default function SubscriptionPage() {
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-[#7f8b83]">Premium</p>
               <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-[2rem] font-semibold tracking-[-0.05em] text-[#18211d]">$9.99</span>
+                <span className="text-[2rem] font-semibold tracking-[-0.05em] text-[#18211d]">$2.99</span>
                 <span className="text-sm text-[#7f8b83]">/month</span>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function SubscriptionPage() {
               disabled={subscribing}
               className="app-button-primary w-full"
             >
-              <span>{subscribing ? 'Activating...' : 'Subscribe — $9.99/mo'}</span>
+              <span>{subscribing ? 'Activating...' : 'Subscribe — $2.99/mo'}</span>
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-white">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-5-5 5 5-5 5" />
