@@ -111,12 +111,37 @@ async function callFeatherless(payload, attempt = 1) {
 }
 
 /**
+ * Resize a base64 image so its longest side is at most maxPx pixels.
+ * Returns a JPEG base64 string (no data-URL prefix).
+ * Vision models charge per image token — smaller images = fewer tokens = faster responses.
+ */
+async function resizeBase64Image(base64, mimeType, maxPx = 512) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const w = Math.round(img.width * scale)
+      const h = Math.round(img.height * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+      // Export as JPEG at 85% quality — sufficient for dermatology feature detection
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+      resolve(dataUrl.split(',')[1])
+    }
+    img.onerror = reject
+    img.src = `data:${mimeType};base64,${base64}`
+  })
+}
+
+/**
  * Step 1 — Vision diagnosis
  * @param {{ imageBase64: string, mediaType: string, demographics: object, caseTitle: string }}
  * @returns {{ conditions: Array<{ rank, name, confidence }> }}
  */
 export async function diagnoseSkin({ imageBase64, mediaType = 'image/jpeg', demographics, caseTitle }) {
-  const { age, weight_kg, skin_type, location, race_ethnicity, biological_sex } = demographics
+  const { age, skin_type, race_ethnicity, biological_sex } = demographics
 
   console.log('[Featherless] diagnoseSkin called:', {
     mediaType,
@@ -125,50 +150,40 @@ export async function diagnoseSkin({ imageBase64, mediaType = 'image/jpeg', demo
     caseTitle,
   })
 
-  const userPrompt = `Analyze the skin condition visible in this image. The patient's information is:
-- Age: ${age ?? 'unknown'}
-- Weight: ${weight_kg ? `${weight_kg} kg` : 'unknown'}
-- Skin type: ${skin_type ?? 'unknown'}
-- Location: ${location ?? 'unknown'}
-- Race/Ethnicity: ${race_ethnicity ?? 'not specified'}
-- Biological sex: ${biological_sex ?? 'unknown'}
-- Patient's description: "${caseTitle}"
+  // Resize to 512px max — cuts image token count dramatically for large uploads
+  const resizedBase64 = await resizeBase64Image(imageBase64, mediaType, 512)
+  console.log('[Featherless] resized base64 length:', resizedBase64.length, '(was', imageBase64.length, ')')
 
-Return your analysis as a JSON object in exactly this format:
-{
-  "conditions": [
-    { "rank": 1, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 2, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 3, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 4, "name": "<condition name>", "confidence": <0.00-1.00> },
-    { "rank": 5, "name": "<condition name>", "confidence": <0.00-1.00> }
-  ]
-}
+  const userPrompt = `Patient: age ${age ?? '?'}, ${biological_sex ?? '?'}, ${skin_type ?? '?'} skin, ${race_ethnicity ?? '?'}. Description: "${caseTitle}".
 
-Confidence values reflect relative likelihood given visual and demographic context.
-Return exactly 5 conditions. Do not include any text outside the JSON object.`
+Identify the top 5 most likely skin conditions shown. Reply with ONLY this JSON, no other text:
+{"conditions":[{"rank":1,"name":"...","confidence":0.00},{"rank":2,"name":"...","confidence":0.00},{"rank":3,"name":"...","confidence":0.00},{"rank":4,"name":"...","confidence":0.00},{"rank":5,"name":"...","confidence":0.00}]}`
 
   const payload = {
     model: VISION_MODEL,
     messages: [
       {
         role: 'system',
-        content:
-          'You are a dermatological AI assistant trained to analyze skin photos and suggest potential conditions for educational purposes. You are not a licensed medical professional and do not provide diagnoses. Always respond with valid JSON only — no preamble, no markdown code fences, no trailing text.',
+        content: 'Dermatology image classifier. Output valid JSON only, no preamble.',
       },
       {
         role: 'user',
         content: [
           {
             type: 'image_url',
-            image_url: { url: `data:${mediaType};base64,${imageBase64}` },
+            image_url: { url: `data:image/jpeg;base64,${resizedBase64}` },
           },
           { type: 'text', text: userPrompt },
         ],
       },
     ],
-    temperature: 0.2,
-    max_tokens: 4096,
+    temperature: 0.1,
+    max_tokens: 4000,
+    // Stop the moment the outer JSON object closes — prevents post-JSON prose
+    stop: [']}'],
+    include_stop_str_in_output: true,
+    // Enforce JSON output mode (OpenAI-compatible — ignored if unsupported)
+    response_format: { type: 'json_object' },
   }
 
   return callFeatherless(payload)
@@ -179,50 +194,48 @@ Return exactly 5 conditions. Do not include any text outside the JSON object.`
  * @param {{ rawProductsAndReviews: object, condition: string }}
  * @returns {Array<RankedProduct>}
  */
+// Condense product data before sending to reduce input tokens.
+function condenseProducts(rawProductsAndReviews) {
+  const products = rawProductsAndReviews?.products ?? []
+  return products.map(p => ({
+    id: p.id,
+    name: p.name,
+    brand: p.brand,
+    rating: p.reviews?.average_rating ?? null,
+    review_count: p.reviews?.review_count ?? null,
+    // Truncate long review summaries to keep input small
+    sentiment: (p.reviews?.raw_summary ?? '').slice(0, 200),
+  }))
+}
+
 export async function rankProducts({ rawProductsAndReviews, condition }) {
   console.log('[Featherless] rankProducts called:', { condition, productCount: rawProductsAndReviews?.products?.length })
 
-  const userPrompt = `Below is a JSON object containing skincare products and their collected review data for the condition: "${condition}".
+  const condensed = condenseProducts(rawProductsAndReviews)
 
-${JSON.stringify(rawProductsAndReviews)}
+  const userPrompt = `Rank these skincare products for treating "${condition}" best to worst. Base ranking on rating, review count, and sentiment.
 
-Analyze the review data for each product. Consider:
-1. Overall customer sentiment (positive vs. negative experiences)
-2. Effectiveness specifically for "${condition}"
-3. Review consistency (avoid polarizing products; favor consistent praise)
-4. Review volume (more reviews = more reliable signal)
+Products: ${JSON.stringify(condensed)}
 
-Return ONLY a ranked JSON array ordered from best (#1) to lowest.
-No text outside the JSON:
-[
-  {
-    "rank": 1,
-    "product_id": "<id from input>",
-    "name": "<product name>",
-    "brand": "<brand name>",
-    "description": "<one sentence description>",
-    "url": "<url or null>",
-    "review_summary": "<2-3 sentence synthesis of why this product ranked here>",
-    "sentiment_score": <float 0.0-1.0>,
-    "review_count": <integer or null>,
-    "ranking_rationale": "<one sentence comparing this product to its competitors>"
-  }
-]
-
-Include every product from the input. Do not omit any.`
+Reply with ONLY a JSON array, no other text:
+[{"rank":1,"product_id":"...","name":"...","brand":"...","review_summary":"<1 sentence>","sentiment_score":0.0,"review_count":0}]`
 
   const payload = {
     model: TEXT_MODEL,
     messages: [
       {
         role: 'system',
-        content:
-          'You are a product analyst specializing in skincare. You read collected review data for multiple products and rank them objectively based on sentiment quality, review volume, and relevance to a specific skin condition. Respond with valid JSON only — no preamble, no markdown code fences, no trailing text.',
+        content: 'Skincare product ranker. Output valid JSON only, no preamble.',
       },
       { role: 'user', content: userPrompt },
     ],
-    temperature: 0.2,
-    max_tokens: 2048,
+    temperature: 0.1,
+    max_tokens: 1200,
+    // Stop the moment the JSON array closes — prevents post-JSON prose
+    stop: ['\n]', '\n]\n'],
+    include_stop_str_in_output: true,
+    // Enforce JSON output mode (OpenAI-compatible — ignored if unsupported)
+    response_format: { type: 'json_object' },
   }
 
   return callFeatherless(payload)

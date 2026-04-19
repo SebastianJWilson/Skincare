@@ -214,7 +214,22 @@ async function runPipeline(caseData, userId, onCaseUpdate) {
       })
       console.log('[Pipeline] rankProducts result:', rankedArray)
 
-      const ranked_products = rankedArray.sort((a, b) => a.rank - b.rank)
+      // LLM may return a wrapped object instead of a bare array — normalize it.
+      const arr = Array.isArray(rankedArray)
+        ? rankedArray
+        : Array.isArray(rankedArray?.ranked)
+          ? rankedArray.ranked
+          : Array.isArray(rankedArray?.products)
+            ? rankedArray.products
+            : Object.values(rankedArray ?? {})
+
+      // Re-attach url from the original products — the LLM never sees or returns it.
+      const originalById = Object.fromEntries(
+        (rawProductsAndReviews?.products ?? []).map(p => [p.id, p])
+      )
+      const ranked_products = arr
+        .sort((a, b) => a.rank - b.rank)
+        .map(p => ({ ...p, url: originalById[p.product_id]?.url ?? null }))
       const top_product = ranked_products[0] ?? null
 
       await updateCase(caseId, {
