@@ -1,11 +1,20 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import CaseStatusBadge from './CaseStatusBadge'
 
 function useImageUrl(imagePath) {
-  if (!imagePath) return null
-  const { data } = supabase.storage.from('case-images').getPublicUrl(imagePath)
-  return data?.publicUrl ?? null
+  const [url, setUrl] = useState(null)
+
+  useEffect(() => {
+    if (!imagePath) return
+    supabase.storage
+      .from('case-images')
+      .createSignedUrl(imagePath, 60 * 60) // 1-hour expiry
+      .then(({ data }) => setUrl(data?.signedUrl ?? null))
+  }, [imagePath])
+
+  return url
 }
 
 function relativeTime(dateStr) {
