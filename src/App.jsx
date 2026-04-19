@@ -17,9 +17,9 @@ import OfflineBanner from './components/ui/OfflineBanner'
 
 // Redirects authenticated+onboarded users away from login/signup
 function PublicRoute({ children }) {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, profileLoading } = useAuth()
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
@@ -29,6 +29,10 @@ function PublicRoute({ children }) {
 
   if (user && profile?.onboarding_complete) {
     return <Navigate to="/cases" replace />
+  }
+
+  if (user) {
+    return <Navigate to="/onboarding" replace />
   }
 
   return children

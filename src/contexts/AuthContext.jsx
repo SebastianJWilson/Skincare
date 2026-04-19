@@ -8,6 +8,7 @@ const initialState = {
   user: null,
   profile: null,
   loading: true,
+  profileLoading: false,
 }
 
 function authReducer(state, action) {
@@ -18,13 +19,16 @@ function authReducer(state, action) {
         session: action.payload.session,
         user: action.payload.session?.user ?? null,
         loading: false,
+        profileLoading: !!action.payload.session?.user,
       }
     case 'SET_PROFILE':
-      return { ...state, profile: action.payload }
+      return { ...state, profile: action.payload, profileLoading: false }
+    case 'PROFILE_LOAD_DONE':
+      return { ...state, profileLoading: false }
     case 'SET_LOADING':
       return { ...state, loading: action.payload }
     case 'SIGN_OUT':
-      return { ...initialState, loading: false }
+      return { ...initialState, loading: false, profileLoading: false }
     default:
       return state
   }
@@ -42,6 +46,8 @@ export function AuthProvider({ children }) {
 
     if (!error && data) {
       dispatch({ type: 'SET_PROFILE', payload: data })
+    } else {
+      dispatch({ type: 'PROFILE_LOAD_DONE' })
     }
   }
 
@@ -85,6 +91,7 @@ export function AuthProvider({ children }) {
     user: state.user,
     profile: state.profile,
     loading: state.loading,
+    profileLoading: state.profileLoading,
     signOut,
     refreshProfile,
   }
