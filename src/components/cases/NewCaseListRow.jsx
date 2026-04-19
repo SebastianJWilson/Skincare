@@ -54,17 +54,6 @@ export default function NewCaseListRow({ weeklyCount = 0, isLimited = false, isP
         )}
       </div>
 
-      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[#5e6a60] ${isLimited ? 'bg-amber-50' : 'bg-[#f4f1ea]'}`}>
-        {isLimited ? (
-          <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        ) : (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        )}
-      </div>
     </Link>
   )
 }
