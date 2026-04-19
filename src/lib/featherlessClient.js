@@ -1,5 +1,5 @@
 // API calls go through server-side routes — keys never exposed to the browser.
-// - diagnoseSkin → Vercel /api/diagnose
+// - diagnoseSkin → Supabase Edge Function diagnose-condition (150s timeout, no Vercel plan limit)
 // - rankProducts → Supabase Edge Function rank-products (150s timeout, no Vercel plan limit)
 console.log('[Featherless] Client initialised — using server-side API routes')
 
@@ -28,16 +28,21 @@ function extractJson(text) {
 }
 
 /**
- * Calls the Vercel API route which proxies to Featherless server-side.
- * API keys are never exposed to the browser.
+ * Calls the Supabase Edge Function which proxies to Featherless server-side.
+ * API keys are never exposed to the browser. 150s timeout vs Vercel Hobby's 60s.
  */
 async function callDiagnoseRoute(payload, attempt = 1) {
-  console.log(`[Featherless] /api/diagnose attempt ${attempt}`)
+  console.log(`[Featherless] diagnose-condition attempt ${attempt}`)
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '')
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
   let res
   try {
-    res = await fetch('/api/diagnose', {
+    res = await fetch(`${supabaseUrl}/functions/v1/diagnose-condition`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
       body: JSON.stringify(payload),
     })
   } catch (networkErr) {
@@ -47,13 +52,13 @@ async function callDiagnoseRoute(payload, attempt = 1) {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => res.statusText)
-    console.error(`[Featherless] /api/diagnose non-OK on attempt ${attempt}:`, res.status, errText)
+    console.error(`[Featherless] diagnose-condition non-OK on attempt ${attempt}:`, res.status, errText)
     if (attempt < 2) return callDiagnoseRoute(payload, attempt + 1)
     throw new Error(`Diagnose API error ${res.status}: ${errText}`)
   }
 
   const parsed = await res.json()
-  console.log(`[Featherless] /api/diagnose result:`, parsed)
+  console.log(`[Featherless] diagnose-condition result:`, parsed)
   return parsed
 }
 
