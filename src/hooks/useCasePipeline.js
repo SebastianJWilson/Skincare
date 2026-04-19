@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { diagnoseSkin, rankProducts } from '../lib/featherlessClient'
-import { findProductsAndReviews } from '../lib/tinyfishClient'
+import { searchProductsForCondition } from '../lib/ragClient'
 
 /**
  * Orchestrates the 3-step AI pipeline for a case.
@@ -157,10 +157,10 @@ async function runPipeline(caseData, userId, onCaseUpdate) {
   }
 
   // ─────────────────────────────────────────
-  // STEP 2 — Tinyfish AI Product + Review Search
+  // STEP 2 — RAG Product Search (pgvector)
   // ─────────────────────────────────────────
   if (startStep <= 2) {
-    console.log('[Pipeline] Step 2 — Product search starting')
+    console.log('[Pipeline] Step 2 — RAG product search starting')
     const condition = caseData.selected_condition
     if (!condition) {
       console.error('[Pipeline] Step 2 aborted — no selected_condition on caseData')
@@ -171,9 +171,20 @@ async function runPipeline(caseData, userId, onCaseUpdate) {
     try {
       await updateCase(caseId, { status: 'searching_products' }, onCaseUpdate)
 
-      console.log('[Pipeline] Calling findProductsAndReviews for:', condition)
-      const rawProductsAndReviews = await findProductsAndReviews({ condition })
-      console.log('[Pipeline] findProductsAndReviews result:', rawProductsAndReviews)
+      // Fetch user skin_type for better RAG matching
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('skin_type')
+        .eq('id', userId)
+        .single()
+
+      console.log('[Pipeline] Calling searchProductsForCondition for:', condition, 'skin_type:', profile?.skin_type)
+      const rawProductsAndReviews = await searchProductsForCondition({
+        condition,
+        skin_type: profile?.skin_type ?? undefined,
+        match_count: 10,
+      })
+      console.log('[Pipeline] searchProductsForCondition result:', rawProductsAndReviews)
 
       if (!rawProductsAndReviews?.products?.length) {
         console.error('[Pipeline] Step 2 — no products returned')
